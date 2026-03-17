@@ -1,0 +1,72 @@
+\documentclass[10pt, twocolumn, a4paper]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{geometry}
+\usepackage{hyperref}
+\usepackage{float}
+\usepackage{booktabs}
+\usepackage{caption}
+\usepackage[T5]{fontenc} 
+\geometry{left=0.65in, right=0.65in, top=0.8in, bottom=0.8in}
+
+\title{\Large \textbf{Practice  4 - Detection of Pulmonary Nodule from CT images}}
+\author{Nguyễn Thị Như Quỳnh - 22BA13270}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+This report details the comprehensive development and evaluation of a 3D Convolutional Neural Network (CNN) framework dedicated to the volumetric detection of pulmonary nodules from Computed Tomography (CT) scans. Leveraging the LUNA16 benchmark dataset, the proposed pipeline systematically addresses 3D data preprocessing, robust feature extraction through a specialized 3D architecture, and rigorous model evaluation. The study highlights the effectiveness of transitioning from 2D slice-based analysis to fully volumetric 3D analysis, significantly improving the spatial contextual understanding required for accurate nodule identification.
+\end{abstract}
+
+\section{Introduction}
+Lung cancer remains one of the leading causes of cancer-related mortality worldwide. Early detection of pulmonary nodules is crucial for improving patient survival rates. While traditional radiomics and 2D deep learning approaches have been widely used, they inherently discard the rich, inter-slice spatial information present in volumetric CT scans. 
+
+This practice report explores the implementation of a 3D CNN designed specifically for volumetric data. By processing 3D patches directly, the network aims to capture the complex morphological characteristics of pulmonary nodules. 
+
+\section{Dataset and 3D Preprocessing}
+The model was trained and validated using the LUng Nodule Analysis 2016 (LUNA16) dataset. To prepare the raw CT scans for the deep learning model, several preprocessing steps were executed:
+
+\begin{itemize}
+    \item \textbf{HU Normalization:} Voxel intensities were clipped to a Hounsfield Unit (HU) window of [-1000, 400] and normalized to a scale of [0, 1] to isolate lung tissues.
+    \item \textbf{Isotropic Resampling:} All 3D volumes were resampled to a uniform isotropic resolution of $1 \times 1 \times 1$ mm using nearest-neighbor interpolation.
+    \item \textbf{Volumetric Patch Extraction:} Fixed-size 3D sub-volumes of $32 \times 32 \times 32$ voxels were extracted. Positive patches were centered on the annotated nodules, while negative patches were sampled from healthy lung parenchyma to balance the dataset.
+\end{itemize}
+
+% --- IMAGE 1: REAL NODULES VS NON-NODULES ---
+\begin{figure}[H]
+    \centering
+    
+    \includegraphics[width=\linewidth]{tải xuống (54).png} 
+    \caption{Visualization of Extracted 3D Patches: Real Nodules vs. Non-Nodules}
+    \label{fig:patches}
+\end{figure}
+
+\textbf{Remark on Figure \ref{fig:patches}:} The figure displays a comparison between central slices of extracted positive samples (Real Nodules) and negative samples (Non-Nodules). The real nodules clearly exhibit spherical or solid opaque structures characteristic of lung lesions. In contrast, the non-nodule samples display healthy lung parenchyma or tubular structures like blood vessels. This distinct visual morphological difference is what the 3D CNN learns to distinguish during feature extraction.
+
+\section{Methodology and Architecture}
+The core architecture is a custom \texttt{NoduleDetector3D} implemented in PyTorch. The network extracts spatial hierarchies using three consecutive 3D convolutional layers (\texttt{Conv3d}), each activated by a ReLU function and followed by a \texttt{MaxPool3d} layer for spatial downsampling. 
+
+The flattened feature map is then passed through fully connected layers with Dropout integrated to mitigate overfitting. The final output neuron uses a Sigmoid activation function to map the logits to a probability score $P \in [0, 1]$. The model was optimized using the Adam optimizer and Binary Cross Entropy Loss (BCELoss).
+
+\section{Experimental Results and Discussion}
+The model's performance was evaluated by monitoring the loss and accuracy metrics over the training epochs. 
+
+% --- IMAGE 2: LOSS AND ACCURACY CURVES ---
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\linewidth]{tải xuống (53).png}
+    \caption{Training and Validation Metrics (Accuracy and Loss)}
+    \label{fig:metrics}
+\end{figure}
+
+\textbf{Remark on Figure \ref{fig:metrics}:} The dual-plot illustrates the model's learning dynamics. The left subplot demonstrates a steady increase in both training and validation accuracy, indicating that the network successfully learns to classify the 3D patches. The right subplot shows the corresponding cross-entropy loss decreasing rapidly in the initial epochs before stabilizing. The close alignment between the training and validation curves in both subplots suggests that the model generalizes well without suffering from severe overfitting, a result largely attributed to the effective use of dropout layers.
+
+\section{Conclusion}
+This report demonstrated the successful end-to-end implementation of a 3D CNN for volumetric pulmonary nodule detection using the LUNA16 dataset. The meticulous 3D preprocessing pipeline combined with a robust convolutional architecture yielded strong binary classification performance, as evidenced by the stable accuracy and loss metrics. Future improvements could involve adopting deeper architectures such as 3D U-Net to further enhance detection capabilities.
+
+\end{document}
